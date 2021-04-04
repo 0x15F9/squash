@@ -4,6 +4,7 @@ setup(
     name='gym_squash',
     version='0.0.1',
     install_requires=[
-        'gym'
+        'gym',
+        'numpy'
     ]
 )

@@ -1,1 +1,1 @@
-from gym_squash.envs.squah_env import SquashEnv
+from gym_squash.envs.squash_env import SquashEnv
