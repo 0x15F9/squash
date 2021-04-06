@@ -159,6 +159,7 @@ class SquashEnv(gym.Env):
     # TODO: move y pos to config
     self.paddle = Paddle((self.SCREEN_W-self.PADDLE_W)/2, 190, self.PADDLE_W, self.PADDLE_H)
     self.ball = Ball((self.SCREEN_W+self.BALL_W)/2, (self.SCREEN_H+self.BALL_H)/2, self.BALL_W, self.BALL_H)
+    return self.get_obs()
 
   def get_info(self):
     return {
