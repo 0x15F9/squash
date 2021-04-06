@@ -1,7 +1,12 @@
 import gym
 from gym import error, spaces, utils
 from gym.utils import seeding
-from gym.envs.classic_control import rendering as rendering
+
+rendering = None
+def checkRendering():
+  global rendering
+  if rendering is None:
+    from gym.envs.classic_control import rendering as rendering
 
 import numpy as np
 import cv2
@@ -188,6 +193,8 @@ class SquashEnv(gym.Env):
       return self.get_info()
     elif mode == 'rgb_array' or mode == 'human':
       if self.viewer == None:
+        if self.viewer is None:
+          checkRendering()
         self.viewer = rendering.SimpleImageViewer()
       self.viewer.imshow(self.get_obs())
       if mode == 'human':
