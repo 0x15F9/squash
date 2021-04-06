@@ -3,6 +3,10 @@ import gym_squash
 
 env = gym.make('Squash-v0')
 
-state = env.reset()
+print('action space:', env.action_space.n)
+print('observation space:', env.observation_space.shape)
+print(env.get_action_meanings())
 
-print(state.shape)
+# state = env.reset()
+
+# print(state.shape)
