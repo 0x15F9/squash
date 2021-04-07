@@ -158,7 +158,6 @@ class SquashEnv(gym.Env):
 
   def reset(self):
     self.score = 0
-    # self.viewer = rendering.SimpleImageViewer()
     self.viewer = None
     self.window = Window(self.SCREEN_W, self.SCREEN_H)
     # TODO: move y pos to config
@@ -192,19 +191,19 @@ class SquashEnv(gym.Env):
     if mode == 'state':
       return self.get_info()
     elif mode == 'rgb_array' or mode == 'human':
-      if self.viewer == None:
-        if self.viewer is None:
-          checkRendering()
+      if self.viewer is None:
+        checkRendering()
         self.viewer = rendering.SimpleImageViewer()
       self.viewer.imshow(self.get_obs())
       if mode == 'human':
         sleep(delay)
+      return True
     else:
       super(SquashEnv, self).render(mode=mode) # just raise an exception
 
 
   def close(self):
-    if self.viewer:
+    if self.viewer is not None:
       self.viewer.close()
     
   
