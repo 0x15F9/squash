@@ -17,10 +17,13 @@ config = {
   'screen_width': 160,
   'screen_height': 210,
   'paddle_width': 15,
-  'paddle_height': 3,
+  'paddle_height': 5,
+  'paddle_y': 190,
   'ball_width': 2,
   'ball_height': 2,
   'score_max': 20,
+  'top_wall': 45,
+  'wall_w': 8,
 }
 
 class Rect:
@@ -38,6 +41,14 @@ class Window:
     self.w = w
     self.h = h
     
+class TopWall(Rect):
+  def __init__(self):
+    super().__init__(0, config['top_wall'], config['screen_width'], config['paddle_height'])
+    
+class SideWall(Rect):
+  def __init__(self, x):
+    super().__init__(x, config['top_wall'], config['wall_w'], config['screen_height']-config['top_wall'])
+    
 class Paddle(Rect):
   def __init__(self, x, y, w, h, v=3):
     super().__init__(x, y, w, h)
@@ -50,10 +61,10 @@ class Paddle(Rect):
       self.x -= self.v
 
 class Ball(Rect):
-  def __init__(self, x, y, w, h, v=5, a=0, down=1, right=1):
+  def __init__(self, x, y, w, h, v=1, a=0, down=1, right=1):
     super().__init__(x, y, w, h)
     self.v = v
-    self.a = a
+    self.a = random.randint(-v, +v)
     self.down = down
     self.right = right
     
@@ -108,8 +119,10 @@ class SquashEnv(gym.Env):
   SCREEN_H = config['screen_height']
   PADDLE_W = config['paddle_width']
   PADDLE_H = config['paddle_height']
+  PADDLE_Y = config['paddle_y']
   BALL_W = config['ball_width']
   BALL_H = config['ball_height']
+  WALL_W = config['wall_w']
   SCORE_MAX = config['score_max']
 
   def __init__(self):
@@ -132,11 +145,11 @@ class SquashEnv(gym.Env):
     # Ball action
     self.ball.step()
     # Check collision with side walls
-    if self.ball.x <= 0 or self.ball.x+self.BALL_W >= self.SCREEN_W:  
+    if self.ball.x <= self.left_wall.x+self.WALL_W or self.ball.x+self.BALL_W >= self.right_wall.x:  
       self.ball.mirror_h()
     # Check collision with top wall
-    elif self.ball.y <= 0:                                
-      self.ball.y = 0
+    elif self.ball.y <= self.top_wall.y+self.top_wall.h:                                
+      self.ball.y = self.top_wall.y+self.top_wall.h
       self.ball.mirror_v()
       self.ball.randomize_a()      
       reward = 1
@@ -160,8 +173,10 @@ class SquashEnv(gym.Env):
     self.score = 0
     self.viewer = None
     self.window = Window(self.SCREEN_W, self.SCREEN_H)
-    # TODO: move y pos to config
-    self.paddle = Paddle((self.SCREEN_W-self.PADDLE_W)/2, 190, self.PADDLE_W, self.PADDLE_H)
+    self.top_wall = TopWall()
+    self.left_wall = SideWall(0)
+    self.right_wall = SideWall(self.SCREEN_W-self.WALL_W)
+    self.paddle = Paddle((self.SCREEN_W-self.PADDLE_W)/2, self.PADDLE_Y, self.PADDLE_W, self.PADDLE_H)
     self.ball = Ball((self.SCREEN_W+self.BALL_W)/2, (self.SCREEN_H+self.BALL_H)/2, self.BALL_W, self.BALL_H)
     return self.get_obs()
 
@@ -175,6 +190,19 @@ class SquashEnv(gym.Env):
   def get_obs(self):
     # 0 is black, 255 is white
     canvas = np.zeros((self.SCREEN_W, self.SCREEN_H, 3), dtype=np.uint8)
+    # draw wall
+    canvas[
+      int(self.top_wall.x):int(self.top_wall.x+self.top_wall.w+1),
+      int(self.top_wall.y):int(self.top_wall.y+self.top_wall.h+1),
+      ] = 255
+    canvas[
+      int(self.left_wall.x):int(self.left_wall.x+self.left_wall.w+1),
+      int(self.left_wall.y):int(self.left_wall.y+self.left_wall.h+1),
+      ] = 255
+    canvas[
+      int(self.right_wall.x):int(self.right_wall.x+self.right_wall.w+1),
+      int(self.right_wall.y):int(self.right_wall.y+self.right_wall.h+1),
+      ] = 255
     # draw paddle
     canvas[
       int(self.paddle.x):int(self.paddle.x+self.PADDLE_W+1),

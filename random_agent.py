@@ -1,12 +1,15 @@
 import gym
 import gym_squash
 
-env = gym.make('Squash-v0')
+env = gym.make('BreakoutNoFrameskip-v0')
 
-print('action space:', env.action_space.n)
-print('observation space:', env.observation_space.shape)
-print(env.get_action_meanings())
+env.reset()
 
-# state = env.reset()
-
-# print(state.shape)
+for i in range(100):
+    action = env.action_space.sample()
+    obs, reward, done, info = env.step(action)
+    env.render(mode='human')
+    print(i)
+    if done:
+        env.reset()
+    
