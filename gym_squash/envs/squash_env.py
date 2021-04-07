@@ -225,7 +225,7 @@ class SquashEnv(gym.Env):
       self.viewer.imshow(self.get_obs())
       if mode == 'human':
         sleep(delay)
-      return True
+      return self.get_obs()
     else:
       super(SquashEnv, self).render(mode=mode) # just raise an exception
 
