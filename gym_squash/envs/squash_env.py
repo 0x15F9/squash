@@ -50,7 +50,7 @@ class SideWall(Rect):
     super().__init__(x, config['top_wall'], config['wall_w'], config['screen_height']-config['top_wall'])
     
 class Paddle(Rect):
-  def __init__(self, x, y, w, h, v=3):
+  def __init__(self, x, y, w, h, v=1):
     super().__init__(x, y, w, h)
     self.v = v
     
@@ -61,9 +61,10 @@ class Paddle(Rect):
       self.x -= self.v
 
 class Ball(Rect):
-  def __init__(self, x, y, w, h, v=1, a=0, down=1, right=1):
+  def __init__(self, x, y, w, h, v=2, a=0, down=1, right=1):
     super().__init__(x, y, w, h)
     self.v = v
+    self.a = a # TODO: FIXME: random.randint(-v, +v)
     self.a = random.randint(-v, +v)
     self.down = down
     self.right = right
@@ -74,8 +75,12 @@ class Ball(Rect):
   def mirror_h(self):
     self.right = self.right * -1
     
-  def randomize_a(self):
-    self.a = random.randint(-self.v, self.v)
+  def rebound(self, paddle_x, paddle_w):
+    ball_center = self.x + self.w/2
+    paddle_center = paddle_x + paddle_w/2
+    intervals = (2*self.v)+1
+    interval_w = paddle_w/intervals
+    self.a = int((ball_center-paddle_center)/interval_w)
     
   def step(self):
     self.y += self.v * self.down
@@ -137,9 +142,9 @@ class SquashEnv(gym.Env):
     reward = 0
     
     # Paddle action
-    if action == 2 and self.paddle.x+self.paddle.w < self.SCREEN_W:
+    if action == 2 and self.paddle.x+self.paddle.w < self.right_wall.x:
       self.paddle.step('right')
-    elif action == 3 and self.paddle.x > 0:
+    elif action == 3 and self.paddle.x > self.left_wall.x+self.left_wall.w:
       self.paddle.step('left')
       
     # Ball action
@@ -151,13 +156,13 @@ class SquashEnv(gym.Env):
     elif self.ball.y <= self.top_wall.y+self.top_wall.h:                                
       self.ball.y = self.top_wall.y+self.top_wall.h
       self.ball.mirror_v()
-      self.ball.randomize_a()      
+      # self.ball.rebound(self.paddle.x, self.paddle.w)      
       reward = 1
     elif self.ball.y+self.BALL_H >= self.paddle.y:
       # Check collision with Paddle
       if self.ball.x < self.paddle.x + self.PADDLE_W and self.ball.x + self.BALL_W > self.paddle.x:
         self.ball.mirror_v()
-        self.ball.randomize_a()      
+        self.ball.rebound(self.paddle.x, self.paddle.w)      
       # Check Ball go past Paddle
       else:
         reward = -1
@@ -177,7 +182,7 @@ class SquashEnv(gym.Env):
     self.left_wall = SideWall(0)
     self.right_wall = SideWall(self.SCREEN_W-self.WALL_W)
     self.paddle = Paddle((self.SCREEN_W-self.PADDLE_W)/2, self.PADDLE_Y, self.PADDLE_W, self.PADDLE_H)
-    self.ball = Ball((self.SCREEN_W+self.BALL_W)/2, (self.SCREEN_H+self.BALL_H)/2, self.BALL_W, self.BALL_H)
+    self.ball = Ball((self.SCREEN_W-self.BALL_W)/2, (self.SCREEN_H+self.BALL_H)/2, self.BALL_W, self.BALL_H)
     return self.get_obs()
 
   def get_info(self):
