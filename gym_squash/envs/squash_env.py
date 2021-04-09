@@ -43,7 +43,7 @@ class Window:
     
 class TopWall(Rect):
   def __init__(self):
-    super().__init__(0, config['top_wall'], config['screen_width'], config['paddle_height'])
+    super().__init__(0, config['top_wall'], config['screen_width'], config['wall_w'])
     
 class SideWall(Rect):
   def __init__(self, x):
