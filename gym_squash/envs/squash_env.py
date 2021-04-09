@@ -64,7 +64,6 @@ class Ball(Rect):
   def __init__(self, x, y, w, h, v=2, a=0, down=1, right=1):
     super().__init__(x, y, w, h)
     self.v = v
-    self.a = a # TODO: FIXME: random.randint(-v, +v)
     self.a = random.randint(-v, +v)
     self.down = down
     self.right = right
@@ -182,7 +181,7 @@ class SquashEnv(gym.Env):
     self.left_wall = SideWall(0)
     self.right_wall = SideWall(self.SCREEN_W-self.WALL_W)
     self.paddle = Paddle((self.SCREEN_W-self.PADDLE_W)/2, self.PADDLE_Y, self.PADDLE_W, self.PADDLE_H)
-    self.ball = Ball((self.SCREEN_W-self.BALL_W)/2, (self.SCREEN_H+self.BALL_H)/2, self.BALL_W, self.BALL_H)
+    self.ball = Ball((self.SCREEN_W-self.BALL_W)/2, self.top_wall.y+20, self.BALL_W, self.BALL_H)
     return self.get_obs()
 
   def get_info(self):
