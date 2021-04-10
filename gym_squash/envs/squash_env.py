@@ -75,15 +75,19 @@ class Ball(Rect):
     self.right = self.right * -1
     
   def rebound(self, paddle_x, paddle_w):
-    # prevent agent from always aiming with the center of the paddle to have vertical motion
-    if random.random() < 0.2: 
-      self.a = random.randint(-self.v, self.v)
-      return
-    ball_center = self.x + self.w/2
-    paddle_center = paddle_x + paddle_w/2
     intervals = (2*self.v)+1
     interval_w = paddle_w/intervals
-    self.a = int((ball_center-paddle_center)/interval_w)
+    
+    ball_center = (self.x + self.w/2)-paddle_x
+    current_interval = int(ball_center/interval_w)
+    dir = current_interval-self.v
+    # prevent agent from always aiming with the center of the paddle to have vertical motion
+    if current_interval == 0 and random.random() < 0.3: 
+      self.a = random.randint(-self.v, self.v)
+    else:
+      self.a = dir
+    self.right = 1
+    print(self.a)
     
   def step(self):
     self.y += self.v * self.down
@@ -164,6 +168,7 @@ class SquashEnv(gym.Env):
     elif self.ball.y+self.BALL_H >= self.paddle.y:
       # Check collision with Paddle
       if self.ball.x < self.paddle.x + self.PADDLE_W and self.ball.x + self.BALL_W > self.paddle.x:
+        print('ball:', self.ball.x, 'paddle:', self.paddle.x, end=' a: ') # TODO: remove
         self.ball.mirror_v()
         self.ball.rebound(self.paddle.x, self.paddle.w)      
       # Check Ball go past Paddle

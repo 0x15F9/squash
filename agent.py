@@ -8,7 +8,7 @@ env = gym.make('Squash-v0')
 env.reset()
 action = 0 #env.action_space.sample()
 
-for i in range(250*3):
+for i in range(250*5):
     obs, reward, done, info = env.step(action)
     env.render(mode='human', delay=.01)
     paddle_x, paddle_y = info['paddle']
