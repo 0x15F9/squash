@@ -87,7 +87,6 @@ class Ball(Rect):
     else:
       self.a = dir
     self.right = 1
-    print(self.a)
     
   def step(self):
     self.y += self.v * self.down
@@ -168,7 +167,6 @@ class SquashEnv(gym.Env):
     elif self.ball.y+self.BALL_H >= self.paddle.y:
       # Check collision with Paddle
       if self.ball.x < self.paddle.x + self.PADDLE_W and self.ball.x + self.BALL_W > self.paddle.x:
-        print('ball:', self.ball.x, 'paddle:', self.paddle.x, end=' a: ') # TODO: remove
         self.ball.mirror_v()
         self.ball.rebound(self.paddle.x, self.paddle.w)      
       # Check Ball go past Paddle
