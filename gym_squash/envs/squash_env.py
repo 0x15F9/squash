@@ -50,7 +50,7 @@ class SideWall(Rect):
     super().__init__(x, config['top_wall'], config['wall_w'], config['screen_height']-config['top_wall'])
     
 class Paddle(Rect):
-  def __init__(self, x, y, w, h, v=1):
+  def __init__(self, x, y, w, h, v=2):
     super().__init__(x, y, w, h)
     self.v = v
     
