@@ -82,7 +82,7 @@ class Ball(Rect):
     current_interval = int(ball_center/interval_w)
     dir = current_interval-self.v
     # prevent agent from always aiming with the center of the paddle to have vertical motion
-    if current_interval == 0 and random.random() < 0.3: 
+    if dir == 0 and random.random() < 0.3: 
       self.a = random.randint(-self.v, self.v)
     else:
       self.a = dir
