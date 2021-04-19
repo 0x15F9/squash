@@ -61,10 +61,10 @@ class Paddle(Rect):
       self.x -= self.v
 
 class Ball(Rect):
-  def __init__(self, x, y, w, h, v=2, a=0, down=-1, right=1):
+  def __init__(self, x, y, w, h, v=1, a=0, down=-1, right=1):
     super().__init__(x, y, w, h)
     self.v = v
-    self.a = random.randint(-v, +v)
+    self.a = random.choice([-v,v])
     self.down = down
     self.right = right
     
@@ -74,18 +74,23 @@ class Ball(Rect):
   def mirror_h(self):
     self.right = self.right * -1
     
-  def rebound(self, paddle_x, paddle_w):
-    intervals = (2*self.v)+1
+  def randomise(self, range=5):
+    self.a = self.a if self.a != 0 else random.randint(-range,range)
+    
+  def rebound(self, paddle_x, paddle_w, intervals=5):
+    v=intervals/2
+    intervals = (2*v)+1
     interval_w = paddle_w/intervals
     
     ball_center = (self.x + self.w/2)-paddle_x
     current_interval = int(ball_center/interval_w)
-    dir = current_interval-self.v
+    dir = current_interval-v
     # prevent agent from always aiming with the center of the paddle to have vertical motion
-    if dir == 0 and random.random() < 0.3: 
-      self.a = random.randint(-self.v, self.v)
-    else:
-      self.a = dir
+    # if dir == 0 and random.random() < 0.3: 
+    #   self.a = random.randint(-self.v, self.v)
+    # else:
+    #   self.a = dir
+    self.a = dir
     self.right = 1
     
   def step(self):
@@ -95,7 +100,7 @@ class Ball(Rect):
 class SquashEnv(gym.Env):
   metadata = {
     'render.modes': ['human', 'rgb_array', 'state'],
-    'video.frames_per_second' : 50
+    'video.frames_per_second' : 25
   }
 
   # for compatibility with typical atari wrappers
@@ -125,6 +130,9 @@ class SquashEnv(gym.Env):
     3, # RIGHT
     4, # LEFT
   }
+  
+  def get_action_meanings(self):
+    return [atari_action_meaning[i] for i in self.atari_action_set]
   
   SCREEN_W = config['screen_width']
   SCREEN_H = config['screen_height']
@@ -162,12 +170,13 @@ class SquashEnv(gym.Env):
     elif self.ball.y <= self.top_wall.y+self.top_wall.h:                                
       self.ball.y = self.top_wall.y+self.top_wall.h
       self.ball.mirror_v()
-      # self.ball.rebound(self.paddle.x, self.paddle.w)      
+      self.ball.randomise(range=1)
       reward = 1
     elif self.ball.y+self.BALL_H >= self.paddle.y:
       # Check collision with Paddle
       if self.ball.x < self.paddle.x + self.PADDLE_W and self.ball.x + self.BALL_W > self.paddle.x:
         self.ball.mirror_v()
+        self.ball.y = self.paddle.y-self.BALL_H
         self.ball.rebound(self.paddle.x, self.paddle.w)      
       # Check Ball go past Paddle
       else:
